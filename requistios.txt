@@ -1,0 +1,46 @@
+Requisitos funcionais:
+1. A landing page deve mostrar os próximos 4 eventos registados no sistema.
+2. Para cada evento deve-se mostrar: Nome, localização, data e hora, duração e descrição textual.
+3. Deve haver um agente cultural registado no sistema (Simulação de autenticaçao). 
+4. O agente cultural pode registar, editar ou apagar um evento que lhe pertença.
+5. O utilizador comum pode listar toda a informação publica do sistema. 
+6. Um utilizador registado pode adicionar um comentario relativamente a um evento.
+7. A administração deve ter a opção de listar agentes culturais, eliminar eventos e eliminar comentarios.
+8. A estrutura visual deve conter: 
+Topo: cabeçalho com titulo do site e opções de navegação
+Conteudo principal;
+Listagem com paginação. (Requer metodo post e nº de pagina)
+Em baixo uma zona para contatos, creditos da aplicação web e um apontador para www.uevora.pt
+9. Deve haver uma barra de pesquisa, em que se pode pesquisar por nome, data, ou descrição do evento
+10. Filtragem local, sem ter que voltar a pedir ao servidor
+11. Nos detalhes do evento, a sua localização deve estar mostrada num mapa.
+
+Requisitos não funcionais.
+1. O sistema deve ter uma simulação de autenticação (apenas front end)
+
+3. O sistema deve comunicar com um servidor de apoio
+4. O sistema deve ter três perfis de utilizadores: visitante, agente cultural, administrador. ? Conflito com requisito funcional
+5. Layout deve ser fliuido.
+6. A área de conteudo principal deve estar otimizada. (Ocupar o espaço possivel)
+7. A repsosta do sistema é um codigo unico. Esse código deve ser mostrado ao utilizador de maneira a indicar o sucesso ou insucesso da operaçao
+8. O sistema deve interpretar erros na comunicação e ajustar o procedimento, nomeadamente observar mensagens relativas a campos ou
+parametros em falta.
+9. O desenvolvedor deve decidir sobre os aspetos omissos.
+
+Endpoint URL (após o prefixo
+https://magno.di.uevora.pt/tweb )
+Notas
+/t1/events Obter os próximos 4 eventos para a página inicial; o servidor filtra e ordena.
+/t1/search Procurar eventos por nome, data ou descrição; o servidor aplica os critérios.
+/t1/events Listar todos os registos, com paginação.
+/t1/newevent
+Registar novo evento (agente cultural); resposta é um código único ou
+mensagem de erro legível.
+/t1/events/{id} Obter os detalhes do evento com determinado id.
+/t1/events/{id} Editar evento com determinado id.
+/t1/newcomment Adicionar comentário público a um evento.
+/t1/agents Listar agentes culturais.
+/t1/deleteevent Eliminar um evento.
+/t1/deletecomment Eliminar um comentário associado a um evento.
+
+

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eventos</title>
+</head>
+<div id="header"></div>
+<div id="content"></div>
+<div id="footer"></div>
+<body>
+    
+<script>
+    const xhttp = new XMLHttpRequest();
+    
+    displayNextEvents();
+
+    function displayEvents(evs)
+    {   
+        let ctx = document.getElementById("content");
+        let eventCount = evs.length;
+        for(let i=0;i<eventCount;i++)
+        {
+            const para = document.createElement("p");
+            const textNode = document.createTextNode(JSON.stringify(evs[i]));
+            para.append(textNode);
+            
+            ctx.append(para);
+        }
+    }
+
+    async function displayNextEvents()
+    {
+        let events = await getNextEvents();
+        displayEvents(events.events);
+    }
+    
+    async function getNextEvents()
+    {
+        const response = await fetch("https://magno.di.uevora.pt/tweb/t1/events");
+        const data = await response.json();
+        return data.ok ? data : null;
+    }
+
+    
+</script>
+</body>
+</html>
