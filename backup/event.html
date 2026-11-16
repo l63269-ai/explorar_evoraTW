@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="header">
+    </div>
+    <div id="content"></div>
+    <div id="footer"></div>
+
+    <script>
+        const params = new URLSearchParams(location.search);
+        const id = params.get("id");
+        var agent_id;
+        loadEvent();
+
+        async function loadEvent(){
+            try {
+                const res = await fetch(`https://magno.di.uevora.pt/tweb/t1/events/${id}`, {
+                    method: "GET"
+                });
+            
+                if (!res.ok) {
+                    console.log(res.status, await res.text()); 
+                    return;
+                }
+            
+                const data = await res.json();
+                
+                showEvent(data.event);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function showEvent(ev) {
+            const ctx = document.getElementById("content");
+            ctx.replaceChildren();
+
+            let id = ev.id;
+            let nome = ev.name;
+            let location = ev.location;
+            let address = location.address;
+            let lat = location.lat;
+            let lng = location.lng;
+            let datetime = ev.datetime;
+            let duration = ev.duration;
+            let description = ev.description;
+            var agent_id = ev.agent_id;
+
+            const fields = [
+                `Name: ${nome}`,
+                `Address: ${address}`,
+                `Date: ${datetime}`,
+                `Description: ${description}`,
+                `AI: ${agent_id}`
+            ];
+
+            for (const text of fields) {
+                const p = document.createElement("p");
+                p.textContent = text;
+                ctx.append(p);
+            }
+        }
+
+    </script>
+</body>
+</html>

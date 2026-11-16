@@ -1,44 +1,201 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eventos</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<div id="header"></div>
-<div id="content"></div>
-<div id="footer"></div>
+
+
 <body>
-    
+    <div id="header">
+        <h1>Eventos</h1>
+        <nav>
+            <a href="index.html">Início</a>
+            <a href="agente.html" id="agentLink" class="hidden">Área do Agente</a>
+            <a href="login.html">Entrar</a>
+        </nav>
+    </div>
+    <div id="content">
+
+        <h2>Próximos eventos</h2>
+        <div id="events"></div>
+        <hr>
+        <h2>Todos os eventos</h2>
+        <div id="searchBar">
+            <input type="text" placeholder="Procurar.." id="searchValue" />
+            <input type="date" id="searchDate"/>
+            <button onclick="searchEvent()">Procurar</button>
+        </div>
+        <div id="allEvents"></div>
+        <div id="pagination">
+            <button onclick="changePage(-1)">Anterior</button>
+            <button onclick="changePage(1)">Seguinte</button>
+        </div>
+    </div>
+    <div id="footer">
+        <p>Trabalho realizado na <a href="https://www.uevora.pt">Universidade de Évora</a></p>
+    </div>
+<script src="js/auth.js"></script>
 <script>
+    if(isAgent(getCookie())) document.getElementById("agentLink").classList.remove("hidden");
     const xhttp = new XMLHttpRequest();
     
+    let page = 1;
     displayNextEvents();
+    displayAllEvents();
 
-    function displayEvents(evs)
+    function changePage(n)
+    {
+        if(page + n < 1) return;
+        page += n;
+        displayAllEvents();
+    }
+
+    function displayEvents(evs, target = "allEvents")
     {   
-        let ctx = document.getElementById("content");
+        let ctx = document.getElementById(target);
+        
         let eventCount = evs.length;
+        
+        ctx.replaceChildren();
         for(let i=0;i<eventCount;i++)
         {
-            const para = document.createElement("p");
-            const textNode = document.createTextNode(JSON.stringify(evs[i]));
-            para.append(textNode);
-            
-            ctx.append(para);
+            let id = evs[i].id;
+            let nome = evs[i].name;
+            let location = evs[i].location;
+            let address = location.address;
+            let lat = location.lat;
+            let lng = location.lng;
+            let datetime = evs[i].datetime;
+            let duration = evs[i].duration;
+            let description = evs[i].description;
+            let agent_id = evs[i].agent_id;
+            let durationStr = duration/60;
+            durationStr = durationStr + "h";
+            const campos = [
+                ["Localização:", address],
+                ["Data:", datetime],
+                ["Duração:", durationStr],
+                ["Descrição:", description]
+            ];
+
+            const card = document.createElement("div");
+            card.className = "event";
+            const h2 = document.createElement("h2");
+            const link = document.createElement("a");
+            link.href = `event.html?id=${id}`;
+            link.textContent = nome;
+            h2.append(link);
+            card.append(h2);
+            for(let [label, value] of campos){
+                const p = document.createElement("p");
+                const span = document.createElement("span");
+                span.className = "label";
+                span.textContent = label + " ";
+                p.append(span, value);
+                card.append(p);
+            }
+            ctx.append(card);
         }
+    }
+    async function searchEvent()
+    {
+        let ctx = document.getElementById("searchDate");
+        searchDate = ctx.value;
+        ctx = document.getElementById("searchValue");
+        searchText = ctx.value;
+
+        
+
+        if(searchText === "" && searchDate === ""){
+            displayAllEvents();
+        }
+        else{
+            if(searchDate!=""){
+                var evdate = await searchEventDate(searchDate);
+            }
+            if(searchText!=""){
+                var evname = await searchEventName(searchText);
+            }
+            if(evname===undefined && evdate===undefined){
+                displayAllEvents();
+            }
+            else if(evname===undefined && evdate !=undefined){
+                displayEvents(evdate);
+            }
+            else if(evname!="undefined" && evdate === undefined)
+            {
+                displayEvents(evname);
+            }
+            else if(evname !=undefined && evdate != undefined)
+            {
+                let ids = new Set(evdate.map(event => event.id));
+                let intersection = evname.filter(ev => ids.has(ev.id));
+                displayEvents(intersection);
+            }
+            
+        }
+
+
+        
+        
+    }
+
+    async function searchEventDate(date)
+    {
+        let events = await getSearchEvent(date, true);
+
+        return events.items;
+    }
+
+    async function searchEventName(name)
+    {
+        let events = await getSearchEvent(name, false);
+
+        return events.items;
     }
 
     async function displayNextEvents()
     {
         let events = await getNextEvents();
-        displayEvents(events.events);
+        displayEvents(events.events, "events");
     }
     
+    async function getSearchEvent(sv, date)
+    {
+        const response = await fetch('https://magno.di.uevora.pt/tweb/t1/search', {
+            method:'POST',
+            body: JSON.stringify(date ? { d: sv } : { q:sv })
+        });
+        const data = await response.json();
+        return data.ok ? data : null;
+    }
+
+    async function displayAllEvents()
+    {
+        let events = await getAllEvents(page);
+        if(events.items.length == 0 && page > 1){ page--; return; }
+        displayEvents(events.items);
+    }
+    async function getAllEvents(pg)
+    {
+        const response = await fetch('https://magno.di.uevora.pt/tweb/t1/events',{
+            method:'POST',
+            body: JSON.stringify({ page: pg })
+        }
+        );
+        const data = await response.json();
+        console.log(data);
+        return data.ok ? data : null;
+    }
     async function getNextEvents()
     {
-        const response = await fetch("https://magno.di.uevora.pt/tweb/t1/events");
+        const response = await fetch('https://magno.di.uevora.pt/tweb/t1/events'
+        );
         const data = await response.json();
+        console.log(data);
         return data.ok ? data : null;
     }
 

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <input type="text" id="user" placeholder="Username">
+    <input type="password" id="pw" placeholder="Password">
+    <input type="button" onclick="tryLogin()" value="Login"/>
+
+    <script src="js/auth.js"></script>
+    <script>
+        function tryLogin() {
+            const user = document.getElementById("user").value;
+            const pw = document.getElementById("pw").value;
+
+            if (login(user, pw)) {
+                window.location.href = "index.html";
+            } else {
+                alert("Invalid credentials");
+            }
+        }
+    </script>
+</body>
+</html>

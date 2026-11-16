@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrar</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="header">
+        <h1>Eventos</h1>
+        <nav>
+            <a href="index.html">Início</a>
+            <a href="login.html">Entrar</a>
+        </nav>
+    </div>
+    <div id="content">
+        <div id="detail-card">
+            <h2>Entrar</h2>
+            <input type="text" id="user" placeholder="Utilizador">
+            <input type="password" id="pw" placeholder="Palavra-passe">
+            <button onclick="tryLogin()">Entrar</button>
+        </div>
+    </div>
+    <div id="footer">
+        <p>Trabalho realizado na <a href="https://www.uevora.pt">Universidade de Évora</a></p>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        function tryLogin() {
+            const user = document.getElementById("user").value;
+            const pw = document.getElementById("pw").value;
+
+            if (login(user, pw)) {
+                window.location.href = "index.html";
+            } else {
+                alert("Credenciais inválidas");
+            }
+        }
+    </script>
+</body>
+</html>

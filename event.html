@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evento</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="header">
+        <h1>Eventos</h1>
+        <nav>
+            <a href="index.html">Início</a>
+            <a href="login.html">Entrar</a>
+        </nav>
+    </div>
+    <div id="content">
+        <a id="back" href="index.html">Voltar</a>
+        <div id="detail-card"></div>
+        <iframe id="map"></iframe>
+    </div>
+    <div id="footer">
+        <p>Trabalho realizado na <a href="https://www.uevora.pt">Universidade de Évora</a></p>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        const params = new URLSearchParams(location.search);
+        const id = params.get("id");
+        var agent_id;
+        loadEvent();
+
+        async function loadEvent(){
+            try {
+                const res = await fetch(`https://magno.di.uevora.pt/tweb/t1/events/${id}`, {
+                    method: "GET"
+                });
+            
+                if (!res.ok) {
+                    console.log(res.status, await res.text()); 
+                    return;
+                }
+            
+                const data = await res.json();
+                
+                showEvent(data.event);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function showEvent(ev) {
+            const ctx = document.getElementById("detail-card");
+            ctx.replaceChildren();
+
+            let id = ev.id;
+            let nome = ev.name;
+            let location = ev.location;
+            let address = location.address;
+            let lat = location.lat;
+            let lng = location.lng;
+            let datetime = ev.datetime;
+            let duration = ev.duration;
+            let description = ev.description;
+            var agent_id = ev.agent_id;
+            let durationStr = duration/60;
+            durationStr = durationStr + "h";
+            const h2 = document.createElement("h2");
+            h2.textContent = nome;
+            ctx.append(h2);
+
+            const fields = [
+                ["Data:", datetime],
+                ["Localização:", address],
+                ["Duração:", durationStr],
+                ["Descrição:", description]
+            ];
+
+            for (const [label, value] of fields) {
+                const p = document.createElement("p");
+                const span = document.createElement("span");
+                span.className = "label";
+                span.textContent = label + " ";
+                p.append(span, value);
+                ctx.append(p);
+            }
+
+            const d = 0.01, la = +lat, lo = +lng;
+            document.getElementById("map").src = `https://www.openstreetmap.org/export/embed.html?bbox=${lo - d},${la - d},${lo + d},${la + d}&marker=${la},${lo}`;
+
+            if (isAgent(getCookie()) == agent_id || getUser()?.admin) {
+                const btn = document.createElement("button");
+                btn.textContent = "Editar";
+                btn.onclick = () => editEvent(ev);
+                ctx.append(btn);
+            }
+        }
+
+        function editEvent(ev) {
+            const ctx = document.getElementById("detail-card");
+            ctx.replaceChildren();
+
+            const fields = { name: "Nome", address: "Morada", lat: "Latitude", lng: "Longitude", datetime: "Data", duration: "Duração", description: "Descrição" };
+            const inputs = {};
+            for (const [key, label] of Object.entries(fields)) {
+                const span = document.createElement("span");
+                span.className = "label";
+                span.textContent = label;
+                inputs[key] = document.createElement("input");
+                inputs[key].value = ev[key] ?? ev.location[key];
+                ctx.append(span, inputs[key]);
+            }
+
+            const cancel = document.createElement("button");
+            cancel.textContent = "Cancelar";
+            cancel.onclick = () => showEvent(ev);
+
+            const save = document.createElement("button");
+            save.textContent = "Guardar";
+            save.onclick = () => saveEvent(ev, inputs);
+
+            ctx.append(cancel, save);
+        }
+
+        async function saveEvent(ev, inputs) {
+            try {
+                const res = await fetch(`https://magno.di.uevora.pt/tweb/t1/events/${id}`, {
+                    method: "POST",
+                        body: JSON.stringify({
+                            agent_id: isAgent(getCookie()) ?? ev.agent_id,
+                            name: inputs.name.value,
+                            location: { address: inputs.address.value, lat: +inputs.lat.value, lng: +inputs.lng.value },
+                            datetime: inputs.datetime.value,
+                            duration: +inputs.duration.value,
+                            description: inputs.description.value
+                        })
+                });
+            
+                if (!res.ok) {
+                    console.log(res.status, await res.text()); 
+                    return;
+                }
+            
+                const data = await res.json();
+                
+                showEvent(data.event);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+    </script>
+</body>
+</html>
